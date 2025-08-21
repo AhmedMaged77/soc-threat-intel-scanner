@@ -1,0 +1,476 @@
+<div class="container mt-5">
+  <h2 class="text-center mb-4 scanner-title">SOC Threat Intelligence Scanner</h2>
+
+  <!-- Input Form -->
+  <form (ngSubmit)="scanIOC()" #scanForm="ngForm" class="mb-4" autocomplete="off">
+    <div class="input-group">
+      <input
+        type="text"
+        class="form-control scanner-input"
+        placeholder="Enter URL, IP, hash, or domain"
+        [(ngModel)]="iocValue"
+        name="ioc"
+        required
+      >
+      <button class="btn scanner-btn" type="submit" [disabled]="scanForm.invalid || loading">
+        {{ loading ? 'Scanning...' : 'Scan' }}
+      </button>
+    </div>
+  </form>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-danger neon-red">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="loading" class="text-center my-3">
+    <div class="spinner-border neon-green" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+
+  <!-- Results -->
+  <div *ngIf="type">
+
+    <!-- IP -->
+    <div *ngIf="ipData" class="card scanner-card mb-4">
+      <!-- <div class="card-header neon-green-text">IP Address Details</div> -->
+      <div class="card-header neon-green-text text-center">VirusTotal</div>
+      <div class="card-body p-0">
+        <table class="table table-dark table-striped table-bordered table-hover m-0">
+          <!-- Type & Target -->
+
+          <!-- VirusTotal -->
+          <tr>
+            <th class="p-2">VirusTotal Link</th>
+            @if(ipData.virustotal.vt_link !== "") {
+              <td><a [href]="ipData.virustotal?.vt_link" target="_blank" style="background-color: transparent;">{{ipData.virustotal?.vt_link}}</a></td>
+            }@else {
+              <td>No VirusTotal link available</td>
+            }
+          </tr>
+          <tr><th class="p-2">Type</th><td>{{ type }}</td></tr>
+          <tr><th class="p-2">Target</th><td>{{ target }}</td></tr>
+          <tr>
+            <th class="p-2">Last Analysis Stats</th>
+            @if (ipData.virustotal.last_analysis_stats !== null) {
+              <td>
+                <ul class="mb-0" style="background-color: transparent;">
+                  <li>Malicious: {{ ipData.virustotal.last_analysis_stats.malicious }}</li>
+                  <li>Suspicious: {{ ipData.virustotal.last_analysis_stats.suspicious }}</li>
+                  <li>Undetected: {{ ipData.virustotal.last_analysis_stats.undetected }}</li>
+                  <li>Harmless: {{ ipData.virustotal.last_analysis_stats.harmless }}</li>
+                </ul>
+              </td>
+            }@else {
+              <td>No analysis stats available</td>
+            }
+          </tr>
+          <tr>
+            <th class="p-2">Malicious Engines</th>
+            <td>
+              <table class="table table-sm table-bordered table-hover mb-0 table-dark">
+                <thead>
+                  <tr><th>Engine Name</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  @if( ipData.virustotal.malicious_engines && ipData.virustotal.malicious_engines.length > 0) {
+                    <tr *ngFor="let engine of ipData.virustotal.malicious_engines">
+                      @if (engine.result === "malicious" || engine.result === "suspicious") {
+                        <td>{{ engine.engine }}</td>
+                        <td>{{ engine.result }}</td>
+                      }
+                    </tr>
+                  }@else {
+                    <tr><td colspan="2" class="text-center">No malicious engines detected</td></tr>
+                  }
+                </tbody>
+              </table>
+            </td>
+          </tr>
+
+          <!-- AbuseIPDB -->
+          <tr>
+            <th colspan="2" class="p-2 text-center neon-green-text">AbuseIPDB Details</th>
+          </tr>
+          <tr>
+            <th class="p-2">AbuseIPDB Link</th>
+            <td><a [href]="ipData.abuseipdb.directLink" target="_blank"style="background-color: transparent;">{{ ipData.abuseipdb.directLink }}</a></td>
+          </tr>
+          <tr><th class="p-2">Domain</th><td>{{ ipData.abuseipdb.domain }}</td></tr>
+          <tr><th class="p-2">Country</th><td>{{ ipData.abuseipdb.country }}</td></tr>
+          <tr><th class="p-2">ISP</th><td>{{ ipData.abuseipdb.isp }}</td></tr>
+          <tr><th class="p-2">Usage Type</th><td>{{ ipData.abuseipdb.usageType }}</td></tr>
+          <tr><th class="p-2">Total Reports</th><td>{{ ipData.abuseipdb.totalReports }}</td></tr>
+          <tr><th class="p-2">Abuse Confidence Score</th><td>{{ ipData.abuseipdb.abuseConfidenceScore }}%</td></tr>
+          <tr><th class="p-2">Last Reported At</th><td>{{ ipData.abuseipdb.lastReportedAt }}</td></tr>
+          <tr>
+            <th class="p-2">Common Categories</th>
+            <td>
+              <ul class="mb-0"style="background-color: transparent;">
+                <li *ngFor="let cat of ipData.abuseipdb.commonCategories">{{ cat }}</li>
+              </ul>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- URL, Domain, Hash Sections remain same as before -->
+    <div *ngIf="urlData" class="card scanner-card mb-4">
+      <!-- <div class="card-header neon-green-text">IP Address Details</div> -->
+      <div class="card-header neon-green-text text-center">VirusTotal</div>
+      <div class="card-body p-0">
+        <table class="table table-dark table-striped table-bordered table-hover m-0">
+          <!-- Type & Target -->
+
+          <!-- VirusTotal -->
+          <tr>
+            <th class="p-2">VirusTotal Link</th>
+            @if(urlData.virustotal.vt_link !== "") {
+              <td><a [href]="urlData.virustotal.vt_link" target="_blank" style="background-color: transparent;">{{urlData.virustotal.vt_link}}</a></td>
+            }@else {
+              <td>No VirusTotal link available</td>
+            }
+          </tr>
+          <tr><th class="p-2">Type</th><td>{{ type }}</td></tr>
+          <tr><th class="p-2">Target</th><td>{{ target }}</td></tr>
+          <tr>
+            <th class="p-2">Last Analysis Stats</th>
+            @if (urlData.virustotal.last_analysis_stats !== null) {
+              <td>
+                <ul class="mb-0" style="background-color: transparent;">
+                  <li>Malicious: {{ urlData.virustotal.last_analysis_stats.malicious }}</li>
+                  <li>Suspicious: {{ urlData.virustotal.last_analysis_stats.suspicious }}</li>
+                  <li>Undetected: {{ urlData.virustotal.last_analysis_stats.undetected }}</li>
+                  <li>Harmless: {{ urlData.virustotal.last_analysis_stats.harmless }}</li>
+                </ul>
+              </td>
+            }@else {
+              <td>No analysis stats available</td>
+            }
+          </tr>
+          <tr>
+            <th class="p-2">Malicious Engines</th>
+            <td>
+              <table class="table table-sm table-bordered table-hover mb-0 table-dark">
+                <thead>
+                  <tr><th>Engine Name</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  @if( urlData.virustotal.malicious_engines && urlData.virustotal.malicious_engines.length > 0) {
+                    <tr *ngFor="let engine of urlData.virustotal.malicious_engines">
+                      @if (engine.result === "malicious" || engine.result === "suspicious") {
+                        <td>{{ engine.engine }}</td>
+                        <td>{{ engine.result }}</td>
+                      }
+                    </tr>
+                  }@else {
+                    <tr><td colspan="2" class="text-center">No malicious engines detected</td></tr>
+                  }
+                </tbody>
+              </table>
+            </td>
+          </tr>
+          <!-- UrlScan -->
+          <tr>
+            <th colspan="2" class="p-2 text-center neon-green-text">UrlScan Details</th>
+          </tr>
+          <!-- Scan Metadata -->
+          <tr>
+            <th class="p-2">Report Link</th>
+            <td><a [href]="urlData.urlScan?.report_link" target="_blank" style="background-color: transparent;">{{ urlData.urlScan?.report_link }}</a></td>
+          </tr>
+          <tr>
+            <th class="p-2">Screenshot</th>
+            <td>
+              <a [href]="urlData.urlScan?.screenshot" target="_blank" style="background-color: transparent;">
+                {{ urlData.urlScan?.screenshot ? 'View Screenshot' : 'No Screenshot Available' }}
+              </a>
+            </td>
+          </tr>
+
+
+          <!-- Security Verdicts -->
+          <tr><th colspan="2" class="p-2 text-center">Security Verdicts</th></tr>
+          <tr><th class="p-2">Malicious</th><td>{{ urlData.urlScan.security_verdicts?.malicious }}</td></tr>
+          <tr>
+            @if(urlData.urlScan.security_verdicts?.risk_score !== null) {
+              <th class="p-2">Risk Score</th>
+              <td>{{ urlData.urlScan.security_verdicts?.risk_score }}</td>
+            }@else {
+              <th class="p-2">Risk Score</th>
+              <td>No Risk Score Available</td>
+            }
+          </tr>
+          <tr>
+            <th class="p-2">Categories</th>
+            @if(urlData.urlScan.security_verdicts?.categories && urlData.urlScan.security_verdicts.categories.length > 0) {
+              <td>
+                <ul class="mb-0" style="background-color: transparent;">
+                  <li *ngFor="let cat of urlData.urlScan.security_verdicts.categories">{{ cat }}</li>
+                </ul>
+              </td>
+            }@else {
+              <td>No Categories Available</td>
+            }
+          </tr>
+          <tr>
+            <th class="p-2">Tags</th>
+            @if(urlData.urlScan.security_verdicts?.tags && urlData.urlScan.security_verdicts.tags.length > 0) {
+            <td>
+              <ul class="mb-0" style="background-color: transparent;">
+                <li *ngFor="let tag of urlData.urlScan.security_verdicts.tags">{{ tag }}</li>
+              </ul>
+            </td>
+            }@else {
+              <td>No Tags Available</td>
+            }
+          </tr>
+          <tr>
+            @if(urlData.urlScan.security_verdicts?.summary !== null) {
+              <th class="p-2">Summary</th>
+              <td>{{ urlData.urlScan.security_verdicts?.summary }}</td>
+            }@else {
+              <th class="p-2">Summary</th>
+              <td>No Summary Available</td>
+            }
+            </tr>
+
+          <!-- Network Activity -->
+          <tr><th colspan="2" class="p-2 text-center">Network Activity</th></tr>
+          <tr><th class="p-2">Total Requests</th><td>{{ urlData.urlScan.network_activity?.total_requests }}</td></tr>
+          <tr>
+            <th class="p-2">Contacted Hosts</th>
+            <td>
+              @if(urlData.urlScan.network_activity?.contacted_hosts && urlData.urlScan.network_activity.contacted_hosts.length > 0) {
+                <ul class="mb-0" style="background-color: transparent;">
+                  <li *ngFor="let host of urlData.urlScan.network_activity.contacted_hosts">{{ host }}</li>
+                </ul>
+              }@else {
+                <ul class="mb-0" style="background-color: transparent;">
+                  <li>No Contacted Hosts Available</li>
+                </ul>
+              }
+            </td>
+          </tr>
+          <tr>
+            <th class="p-2">Contacted Domains</th>
+            <td>
+              @if(urlData.urlScan.network_activity?.contacted_domains && urlData.urlScan.network_activity.contacted_domains.length > 0) {
+                <ul class="mb-0" style="background-color: transparent;">
+                  <li *ngFor="let host of urlData.urlScan.network_activity.contacted_domains">{{ host }}</li>
+                </ul>
+              }@else {
+                <ul class="mb-0" style="background-color: transparent;">
+                  <li>No Contacted Hosts Available</li>
+                </ul>
+              }
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <div *ngIf="domainData" class="card scanner-card mb-4">
+      <!-- <div class="card-header neon-green-text text-center">Domain Analysis</div> -->
+      <div class="card-body p-0">
+        <table class="table table-dark table-striped table-bordered table-hover m-0">
+
+          <!-- VirusTotal -->
+          <tr><th colspan="2" class="p-2 text-center neon-green-text">VirusTotal</th></tr>
+
+          <tr>
+            <th class="p-2">VirusTotal Link</th>
+            @if(domainData.virustotal.vt_link !== "") {
+              <td>
+                <a [href]="domainData.virustotal.vt_link" target="_blank" style="background-color: transparent;">
+                  {{ domainData.virustotal.vt_link }}
+                </a>
+              </td>
+            }@else {
+              <td>No VirusTotal link available</td>
+            }
+          </tr>
+
+          <tr><th class="p-2">Type</th><td>{{ type }}</td></tr>
+          <tr><th class="p-2">Target</th><td>{{ target }}</td></tr>
+
+          <!-- Last Analysis Stats -->
+          <tr>
+            <th class="p-2">Last Analysis Stats</th>
+            @if (domainData.virustotal.last_analysis_stats !== null) {
+              <td>
+                <ul class="mb-0" style="background-color: transparent;">
+                  <li>Malicious: {{ domainData.virustotal.last_analysis_stats.malicious }}</li>
+                  <li>Suspicious: {{ domainData.virustotal.last_analysis_stats.suspicious }}</li>
+                  <li>Undetected: {{ domainData.virustotal.last_analysis_stats.undetected }}</li>
+                  <li>Harmless: {{ domainData.virustotal.last_analysis_stats.harmless }}</li>
+                </ul>
+              </td>
+            }@else {
+              <td>No analysis stats available</td>
+            }
+          </tr>
+
+          <!-- Malicious Engines -->
+          <tr>
+            <th class="p-2">Malicious Engines</th>
+            <td>
+              <table class="table table-sm table-bordered table-hover mb-0 table-dark">
+                <thead>
+                  <tr><th>Engine Name</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  @if(domainData.virustotal.malicious_engines && domainData.virustotal.malicious_engines.length > 0) {
+                    <tr *ngFor="let engine of domainData.virustotal.malicious_engines">
+                      @if (engine.result === "malicious" || engine.result === "suspicious") {
+                        <td>{{ engine.engine }}</td>
+                        <td>{{ engine.result }}</td>
+                      }
+                    </tr>
+                  }@else {
+                    <tr><td colspan="2" class="text-center">No malicious engines detected</td></tr>
+                  }
+                </tbody>
+              </table>
+            </td>
+          </tr>
+
+          <!-- WHOIS -->
+          <tr><th colspan="2" class="p-2 text-center neon-green-text">WHOIS Information</th></tr>
+          <tr><th class="p-2">Registrar</th><td>{{ domainData.whois.registrar || 'N/A' }}</td></tr>
+          <tr><th class="p-2">Creation Date</th><td>{{ domainData.whois.creation_date || 'N/A' }}</td></tr>
+          <tr><th class="p-2">Expiration Date</th><td>{{ domainData.whois.expiration_date || 'N/A' }}</td></tr>
+          <tr><th class="p-2">Country</th><td>{{ domainData.whois.country || 'N/A' }}</td></tr>
+
+          <!-- Name Servers -->
+          <tr>
+            <th class="p-2">Name Servers</th>
+            <td>
+              @if(domainData.whois.name_servers && domainData.whois.name_servers.length > 0) {
+                <ul class="mb-0" style="background-color: transparent;">
+                  <li *ngFor="let ns of domainData.whois.name_servers">{{ ns }}</li>
+                </ul>
+              }@else {
+                N/A
+              }
+            </td>
+          </tr>
+
+          <!-- Status -->
+          <tr><th class="p-2">Status</th><td>{{ domainData.whois.status || 'N/A' }}</td></tr>
+
+          <!-- DNS Records -->
+          <tr>
+            <th class="p-2">IPv4 Records</th>
+            <td>
+              @if(domainData.whois.dns?.ipV4 && domainData.whois.dns.ipV4.length > 0) {
+                <ul class="mb-0" style="background-color: transparent;">
+                  <li *ngFor="let ip of domainData.whois?.dns?.ipV4">{{ ip }}</li>
+                </ul>
+              }@else {
+                N/A
+              }
+            </td>
+          </tr>
+          <tr>
+            <th class="p-2">IPv6 Records</th>
+            <td>
+              @if(domainData.whois.dns?.ipV6 && domainData.whois.dns.ipV6.length > 0) {
+                <ul class="mb-0">
+                  <li *ngFor="let ip of domainData.whois.dns.ipV6">{{ ip }}</li>
+                </ul>
+              }@else {
+                N/A
+              }
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+
+    <div *ngIf="hashData" class="card scanner-card mb-4">
+      <!-- <div class="card-header neon-green-text">IP Address Details</div> -->
+      <div class="card-header neon-green-text text-center">VirusTotal</div>
+      <div class="card-body p-0">
+        <table class="table table-dark table-striped table-bordered table-hover m-0">
+          <!-- Type & Target -->
+
+          <!-- VirusTotal -->
+          <tr>
+            <th class="p-2">VirusTotal Link</th>
+            @if(hashData.virustotal.vt_link !== "") {
+              <td><a [href]="hashData.virustotal.vt_link" target="_blank" style="background-color: transparent;">{{hashData.virustotal.vt_link}}</a></td>
+            }@else {
+              <td>No VirusTotal link available</td>
+            }
+          </tr>
+          <tr><th class="p-2">Type</th><td>{{ type }}</td></tr>
+          <tr><th class="p-2">Target</th><td>{{ target }}</td></tr>
+          <tr>
+            <th class="p-2">Last Analysis Stats</th>
+            @if (hashData.virustotal.last_analysis_stats !== null) {
+              <td>
+                <ul class="mb-0" style="background-color: transparent;">
+                  <li>Malicious: {{ hashData.virustotal.last_analysis_stats.malicious }}</li>
+                  <li>Suspicious: {{ hashData.virustotal.last_analysis_stats.suspicious }}</li>
+                  <li>Undetected: {{ hashData.virustotal.last_analysis_stats.undetected }}</li>
+                  <li>Harmless: {{ hashData.virustotal.last_analysis_stats.harmless }}</li>
+                </ul>
+              </td>
+            }@else {
+              <td>No analysis stats available</td>
+            }
+          </tr>
+          <tr>
+            <th class="p-2">Malicious Engines</th>
+            <td>
+              <table class="table table-sm table-bordered table-hover mb-0 table-dark">
+                <thead>
+                  <tr><th>Engine Name</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  @if( hashData.virustotal.malicious_engines && hashData.virustotal.malicious_engines.length > 0) {
+                    <tr *ngFor="let engine of hashData.virustotal.malicious_engines">
+                      @if (engine.result === "malicious" || engine.result === "suspicious") {
+                        <td>{{ engine.engine }}</td>
+                        <td>{{ engine.result }}</td>
+                      }
+                    </tr>
+                  }@else {
+                    <tr><td colspan="2" class="text-center">No malicious engines detected</td></tr>
+                  }
+                </tbody>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <th class="p-2">File Size</th>
+            <td>{{ hashData.virustotal.file_size_readable }} bytes</td>
+          </tr>
+          <tr>
+            <th class = "p-2">File Type</th>
+            <td>{{ hashData.virustotal.type_description }}</td>
+          </tr>
+          <tr>
+            <th class="p-2">File Names</th>
+            <td>
+              <ul class="mb-0" style="background-color: transparent;">
+                <li *ngFor="let name of hashData.virustotal.file_names">{{ name }}</li>
+              </ul>
+          </tr>
+        </table>
+      </div>
+    </div>
+  <!-- AI Summary -->
+  <div *ngIf="aiSummary" class="card scanner-card mb-4">
+    <div class="card-header neon-green-text">AI Summary</div>
+    <div class="card-body">
+      <p class="text-light">{{ aiSummary }}</p>
+    </div>
+  </div>
+  </div>
+</div>

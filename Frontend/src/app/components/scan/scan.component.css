@@ -1,0 +1,55 @@
+/* Neon Cyber Theme */
+body {
+  background-color: transparent;
+  color: #00ff9f;
+}
+
+.scanner-title {
+  color: #00ff9f;
+  text-shadow: 0 0 8px #00ff9f;
+}
+
+.scanner-input {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #00ff9f;
+  border: 1px solid #00ff9f;
+}
+
+.scanner-input::placeholder {
+  color: #00ffaa88;
+}
+
+.scanner-btn {
+  background-color: transparent;
+  border: 1px solid #00ff9f;
+  color: #00ff9f;
+  transition: all 0.3s ease-in-out;
+}
+
+.scanner-btn:hover {
+  background-color: #00ff9f;
+  color: #000;
+}
+
+.neon-red {
+  color: #ff4d4d;
+  background-color: rgba(50, 0, 0, 0.7);
+  border: 1px solid #ff4d4d;
+  text-shadow: 0 0 6px #ff4d4d;
+}
+
+.neon-green {
+  color: #00ff9f;
+  border-color: #00ff9f;
+}
+
+.neon-green-text {
+  color: #00ff9f;
+  font-weight: bold;
+  text-shadow: 0 0 8px #00ff9f;
+}
+
+.scanner-card {
+  background-color: rgba(0, 0, 0, 0.85);
+  border: 1px solid #00ff9f;
+}
