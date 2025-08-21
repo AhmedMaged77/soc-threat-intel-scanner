@@ -2,7 +2,7 @@
 
 ## 🔎 Overview
 SOC Threat Intelligence Scanner is a cybersecurity investigation tool that allows analysts to quickly gather, analyze, and summarize threat intelligence on domains, IPs, URLs, and file hashes.  
-It integrates multiple intelligence sources (VirusTotal, URLScan, AbuseIPDB, WHOIS) and leverages AI (Gemini) to generate concise SOC-ready summaries for faster incident response.
+It integrates multiple intelligence sources (VirusTotal, URLScan, AbuseIPDB, Whoisjson) and leverages AI (Gemini) to generate concise SOC-ready summaries for faster incident response.
 
 ## ⚡ Features
 - 🔍 **Multi-source Intelligence**  
