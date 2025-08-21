@@ -15,8 +15,8 @@ It integrates multiple intelligence sources (VirusTotal, URLScan, AbuseIPDB, WHO
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/your-username/soc-threat-intelligence-scanner.git
-cd soc-threat-intelligence-scanner
+git clone https://github.com/AhmedMaged77/soc-threat-intel-scanner.git
+cd soc-threat-intel-scanner
 ```
 
 ### 2. Backend Setup
